@@ -1,0 +1,10 @@
+VS10MORT.DUSMCPUB filter=lfs diff=lfs merge=lfs -text
+VS11MORT.DUSMCPUB filter=lfs diff=lfs merge=lfs -text
+VS12MORT.DUSMCPUB filter=lfs diff=lfs merge=lfs -text
+VS13MORT.DUSMCPUB filter=lfs diff=lfs merge=lfs -text
+VS14MORT.DUSMCPUB filter=lfs diff=lfs merge=lfs -text
+VS15MORT.DUSMCPUB filter=lfs diff=lfs merge=lfs -text
+VS16MORT.DUSMCPUB filter=lfs diff=lfs merge=lfs -text
+VS17MORT.DUSMCPUB filter=lfs diff=lfs merge=lfs -text
+VS19MORT.DUSMCPUB filter=lfs diff=lfs merge=lfs -text
+VS18MORT.txt filter=lfs diff=lfs merge=lfs -text
