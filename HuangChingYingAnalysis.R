@@ -55,35 +55,92 @@ t8_infmort %>%
   ggplot(aes(x=Year, y=n, group=Cause)) +
   geom_line(aes(color=Cause)) + 
   geom_point(aes(color=Cause)) +
-  scale_x_continuous(breaks=seq(2010,2019,1)) +
+  scale_x_continuous(breaks=seq(2010,2019,1), guide=guide_axis(angle=90)) +
   xlab("Year") +
   ylab("Number of infant deaths") +
   ggtitle("Number of infant deaths by cause, 2010-2019") +
   facet_wrap( ~ Cause, scales="free_y") +
   theme_minimal() 
 
+## Rate
+t8_infmort %>% 
+  count(Year, Cause) %>% 
+  left_join(newborn, by="Year") %>%
+  mutate(Rate=(n/Births)*1000) %>%
+  select(-Births, -n) %>% 
+  ggplot(aes(x=Year, y=Rate, group=Cause)) +
+  geom_line(aes(color=Cause)) + 
+  geom_point(aes(color=Cause)) +
+  scale_x_continuous(breaks=seq(2010,2019,1), guide=guide_axis(angle=90)) +
+  xlab("Year") +
+  ylab("Infant Mortality Rate per 1,000 live births") +
+  ggtitle("Rate by cause, 2010-2019") +
+  facet_wrap( ~ Cause, scales="free_y") +
+  theme_minimal() 
+
+
 
 ## Causes of infant deaths by Sex
 t8_infmort %>% 
   count(Cause, Sex, Year) %>% 
-  ggplot(aes(x=factor(Year), y=n, group=Cause)) +
+  left_join(newborn, by="Year") %>%
+  mutate(Rate=(n/Births)*1000) %>%
+  select(-Births, -n) %>% 
+  ggplot(aes(x=factor(Year), y=Rate, group=Cause)) +
   geom_line(aes(color=Cause)) + 
   geom_point(aes(color=Cause)) +
+  ggpubr::rotate_x_text() +
   xlab("Year") +
-  ylab("Number of infant deaths") +
+  ylab("Infant Mortality Rate per 1,000 live births") +
   ggtitle("Causes of infant deaths by sex, 2010-2019") +
   facet_grid(Cause ~ Sex, scales="free_y")
 
+# Number of infant deaths by Age
+t8_infmort %>% 
+  count(Cause, Age, Year) %>% 
+  left_join(newborn, by="Year") %>%
+  mutate(Rate=(n/Births)*1000) %>%
+  select(-Births, -n) %>% 
+  ggplot(aes(x=factor(Age), y=Rate, fill=Cause)) +
+  geom_boxplot(position=position_dodge(1), notch=TRUE) +
+  scale_x_discrete(guide=guide_axis(angle=90)) +
+  xlab("Age") +
+  ylab("Infant Mortality Rate per 1,000 live births") +
+  ggtitle("Cause of infant deaths by age, 2010-2019") +
+  facet_wrap( ~ Cause, scales="free_y") +
+  theme_bw()
+
+
+# pie chart (Number of infant deaths by age)
+
+t8_infmort %>% 
+  mutate(Age=replace(Age, Age %in% c("01"), "Under 1 hour")) %>%
+  mutate(Age=replace(Age, Age %in% c("02"), "1 - 23 hours")) %>%
+  mutate(Age=replace(Age, Age %in% c("03", "04", "05", "06", "07", "08"), "1 - 6 days")) %>%
+  mutate(Age=replace(Age, Age %in% c("09", "10", "11"), "7 - 27 days")) %>%
+  mutate(Age=replace(Age, Age %in% c("12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22"), "28 - 364 days")) %>%
+  group_by(Age, Year) %>%
+  tally() %>% 
+  ggplot(aes(x=2, y=n, fill=Age)) +
+  geom_bar(stat="identity", position=position_fill()) +
+  coord_polar(theta="y") +
+  xlim(0.5, 2.5) +
+  facet_wrap( ~ Year, ncol=5) +
+  theme_void() +
+  ggtitle("Total infant deaths by age at death from 2010 to 2019\n") 
 
 
 
 # Causes of infant deaths by Month
 t8_infmort %>% 
   count(Cause, Month, Year) %>% 
-  ggplot(aes(x=factor(Month), y=n, fill=Cause)) +
-  geom_boxplot(position=position_dodge(1)) +
+  left_join(newborn, by="Year") %>%
+  mutate(Rate=(n/Births)*1000) %>%
+  select(-Births, -n) %>% 
+  ggplot(aes(x=factor(Month), y=Rate, fill=Cause)) +
+  geom_boxplot(position=position_dodge(1), notch=TRUE) +
   xlab("Month") +
-  ylab("Number of infant deaths") +
+  ylab("Infant Mortality Rate per 1,000 live births") +
   ggtitle("Causes of infant deaths by month, 2010-2019") +
   facet_wrap( ~ Cause, scales="free_y") +
   theme_bw()
@@ -93,122 +150,15 @@ t8_infmort %>%
 # Number of infant deaths by Place
 t8_infmort %>% 
   count(Cause, Place, Year) %>% 
-  ggplot(aes(x=factor(Place), y=n, fill=Cause)) +
-  geom_boxplot(position=position_dodge(1)) +
-  xlab("Place") +
-  ylab("Number of infant deaths") +
-  ggtitle("Causes of infant deaths by place, 2010-2019") +
-  facet_wrap( ~ Cause, scales="free_y") +
-  theme_bw()
-
-
-# Number of infant deaths by Race
-t8_infmort %>% 
-  count(Cause, Race, Year) %>% 
-  ggplot(aes(x=factor(Race), y=n, fill=Cause)) +
-  geom_boxplot(position=position_dodge(1)) +
-  xlab("Race") +
-  ylab("Number of infant deaths") +
-  ggtitle("Causes of infant deaths by Race, 2010-2019") +
-  facet_wrap( ~ Cause, scales="free_y") +
-  theme_bw()
-
-
-t8_infmort %>% 
-  count(Cause, Race, Year) %>% 
-  ggplot(aes(x=factor(Cause), y=n, fill=Race)) +
-  geom_boxplot(position=position_dodge(1)) +
-  xlab("Cause") +
-  ylab("Number of infant deaths") +
-  ggtitle("Race by causes of infant deaths, 2010-2019") +
-  facet_wrap( ~ Race, scales="free_y") +
-  theme_bw()
-
-
-
-
-
-
-##
-
-
-
-
-
-
-  
-#--------------------------------------------
-#try
-
-fig <- t8_infmort %>% 
-  count(Year, Month) %>% 
-  spread(Month, n) %>% 
-  plot_ly(x= ~Year, y= ~n, type="bar") %>%  
-  layout(yaxis=list(title="Count"), barmode="stack")
-
-
-
-# Proportion of Places of deaths by Year
-ggplot(t8_infmort, aes(x=factor(Year), fill=factor(Place))) +
-  geom_bar(position="fill", width=0.7) +
-  scale_x_discrete("Year", expand=c(0,0)) +
-  scale_y_continuous("Proportion of Places", expand=c(0,0)) + 
-  theme_bw()
-
-# Proportion of Places of deaths by Race
-ggplot(t8_infmort, aes(x=factor(Year), fill=factor(Race))) +
-  geom_bar(position="fill", width=0.7) +
-  scale_x_discrete("Year", expand=c(0,0)) +
-  scale_y_continuous("Proportion of Races", expand=c(0,0)) + 
-  theme_bw()
-
-# Number of infant deaths by year
-test <- t8_infmort %>% 
-  count(Year) %>% 
   left_join(newborn, by="Year") %>%
-  mutate(Rate=(n/Births)*1000) %>% 
-  rename(Death=n) %>% 
-  select(-Births) %>% 
-  gather(Data, value, 2:3) %>% 
-  ggplot(aes(x=Year, y=value, fill=Data)) +
-  geom_line(color="#69b3a2", size=2, alpha=0.9, linetype=2) + 
-  scale_x_continuous(breaks=seq(2010,2019,1)) +
-  xlab("Year") +
-  ylab("Rate per 1,000 live births") +
-  ggtitle("INFANT MORTALITY RATE, 2010-2019") +
-  theme_minimal() 
-
-# Number of infant deaths by Cause
-t8_infmort %>% 
-  count(Year, Cause) %>% 
-  ggplot(aes(fill=Cause, y=n, x=factor(Year))) + 
-  geom_bar(position="stack", stat="identity") +
-  xlab("Year") +
-  ylab("Number of infant deaths") +
-  ggtitle("Number of infant deaths by Cause, 2010-2019") +
-  theme_minimal() 
-
-
-# Number of infant deaths by Race
-t8_infmort %>% 
-  count(Year, Race) %>% 
-  ggplot(aes(fill=Race, y=n, x=factor(Year))) + 
-  geom_bar(position="stack", stat="identity") +
-  xlab("Year") +
-  ylab("Number of infant deaths") +
-  ggtitle("Number of infant deaths by Race, 2010-2019") +
-  theme_minimal() 
-
-t8_infmort %>% 
-  count(Year, Race) %>% 
-  ggplot(aes(x=Year, y=n, group=Race)) +
-  geom_line(aes(color=Race)) + 
-  geom_point(aes(color=Race)) +
-  scale_x_continuous(breaks=seq(2010,2019,1)) +
-  xlab("Year") +
-  ylab("Number of infant deaths") +
-  ggtitle("Number of infant deaths by Race, 2010-2019") +
-  theme_minimal() 
-
+  mutate(Rate=(n/Births)*1000) %>%
+  select(-Births, -n) %>% 
+  ggplot(aes(x=factor(Cause), y=Rate, fill=Place)) +
+  geom_boxplot(position=position_dodge(1), notch=TRUE) +
+  xlab("Cause") +
+  ylab("Infant Mortality Rate per 1,000 live births") +
+  ggtitle("Place by causes of infant deaths, 2010-2019") +
+  facet_wrap( ~ Place, scales="free_y") +
+  theme_bw()
 
 
